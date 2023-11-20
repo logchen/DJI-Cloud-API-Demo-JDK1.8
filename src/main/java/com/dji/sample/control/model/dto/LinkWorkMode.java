@@ -5,6 +5,7 @@ import com.dji.sdk.cloudapi.device.LinkWorkModeEnum;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.google.common.collect.ImmutableMap;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -30,6 +31,6 @@ public class LinkWorkMode extends RemoteDebugHandler {
 
     @JsonValue
     public Map toMap() {
-        return Map.of("link_workmode", linkWorkMode.getMode());
+        return ImmutableMap.of("link_workmode", linkWorkMode.getMode());
     }
 }

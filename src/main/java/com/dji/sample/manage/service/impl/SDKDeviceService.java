@@ -21,6 +21,7 @@ import com.dji.sdk.mqtt.osd.TopicOsdRequest;
 import com.dji.sdk.mqtt.state.TopicStateRequest;
 import com.dji.sdk.mqtt.status.TopicStatusRequest;
 import com.dji.sdk.mqtt.status.TopicStatusResponse;
+import com.google.common.base.MoreObjects;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.MessageHeaders;
@@ -77,13 +78,13 @@ public class SDKDeviceService extends AbstractDeviceService {
 
         DeviceDTO gateway = deviceGatewayConvertToDevice(request.getFrom(), request.getData());
         Optional<DeviceDTO> gatewayEntityOpt = onlineSaveDevice(gateway, deviceSn, null);
-        if (gatewayEntityOpt.isEmpty()) {
+        if (!gatewayEntityOpt.isPresent()) {
             log.error("Failed to go online, please check the status data or code logic.");
             return null;
         }
         DeviceDTO subDevice = subDeviceConvertToDevice(updateTopoSubDevice);
         Optional<DeviceDTO> subDeviceEntityOpt = onlineSaveDevice(subDevice, null, gateway.getDeviceSn());
-        if (subDeviceEntityOpt.isEmpty()) {
+        if (!subDeviceEntityOpt.isPresent()) {
             log.error("Failed to go online, please check the status data or code logic.");
             return null;
         }
@@ -113,11 +114,11 @@ public class SDKDeviceService extends AbstractDeviceService {
         deviceService.gatewayOnlineSubscribeTopic(gatewayManager);
         // Only the remote controller is logged in and the aircraft is not connected.
         Optional<DeviceDTO> deviceOpt = deviceRedisService.getDeviceOnline(request.getFrom());
-        if (deviceOpt.isEmpty()) {
+        if (!deviceOpt.isPresent()) {
             // When connecting for the first time
             DeviceDTO gatewayDevice = deviceGatewayConvertToDevice(request.getFrom(), request.getData());
             Optional<DeviceDTO> gatewayDeviceOpt = onlineSaveDevice(gatewayDevice, null, null);
-            if (gatewayDeviceOpt.isEmpty()) {
+            if (!gatewayDeviceOpt.isPresent()) {
                 return null;
             }
             deviceService.pushDeviceOnlineTopo(gatewayDeviceOpt.get().getWorkspaceId(), request.getFrom(), null);
@@ -137,9 +138,9 @@ public class SDKDeviceService extends AbstractDeviceService {
     public void osdDock(TopicOsdRequest<OsdDock> request, MessageHeaders headers) {
         String from = request.getFrom();
         Optional<DeviceDTO> deviceOpt = deviceRedisService.getDeviceOnline(from);
-        if (deviceOpt.isEmpty()) {
+        if (!deviceOpt.isPresent()) {
             deviceOpt = deviceService.getDeviceBySn(from);
-            if (deviceOpt.isEmpty()) {
+            if (!deviceOpt.isPresent()) {
                 log.error("Please restart the drone.");
                 return;
             }
@@ -161,9 +162,9 @@ public class SDKDeviceService extends AbstractDeviceService {
     public void osdDockDrone(TopicOsdRequest<OsdDockDrone> request, MessageHeaders headers) {
         String from = request.getFrom();
         Optional<DeviceDTO> deviceOpt = deviceRedisService.getDeviceOnline(from);
-        if (deviceOpt.isEmpty()) {
+        if (!deviceOpt.isPresent()) {
             deviceOpt = deviceService.getDeviceBySn(from);
-            if (deviceOpt.isEmpty()) {
+            if (!deviceOpt.isPresent()) {
                 log.error("Please restart the drone.");
                 return;
             }
@@ -185,9 +186,9 @@ public class SDKDeviceService extends AbstractDeviceService {
     public void osdRemoteControl(TopicOsdRequest<OsdRemoteControl> request, MessageHeaders headers) {
         String from = request.getFrom();
         Optional<DeviceDTO> deviceOpt = deviceRedisService.getDeviceOnline(from);
-        if (deviceOpt.isEmpty()) {
+        if (!deviceOpt.isPresent()) {
             deviceOpt = deviceService.getDeviceBySn(from);
-            if (deviceOpt.isEmpty()) {
+            if (!deviceOpt.isPresent()) {
                 log.error("Please restart the drone.");
                 return;
             }
@@ -209,9 +210,9 @@ public class SDKDeviceService extends AbstractDeviceService {
     public void osdRcDrone(TopicOsdRequest<OsdRcDrone> request, MessageHeaders headers) {
         String from = request.getFrom();
         Optional<DeviceDTO> deviceOpt = deviceRedisService.getDeviceOnline(from);
-        if (deviceOpt.isEmpty()) {
+        if (!deviceOpt.isPresent()) {
             deviceOpt = deviceService.getDeviceBySn(from);
-            if (deviceOpt.isEmpty()) {
+            if (!deviceOpt.isPresent()) {
                 log.error("Please restart the drone.");
                 return;
             }
@@ -294,11 +295,11 @@ public class SDKDeviceService extends AbstractDeviceService {
             return;
         }
         Optional<DeviceDTO> deviceOpt = deviceRedisService.getDeviceOnline(request.getFrom());
-        if (deviceOpt.isEmpty()) {
+        if (!deviceOpt.isPresent()) {
             return;
         }
         Optional<DeviceDTO> dockOpt = deviceRedisService.getDeviceOnline(request.getGateway());
-        if (dockOpt.isEmpty()) {
+        if (!dockOpt.isPresent()) {
             return;
         }
 
@@ -320,11 +321,11 @@ public class SDKDeviceService extends AbstractDeviceService {
             return;
         }
         Optional<DeviceDTO> deviceOpt = deviceRedisService.getDeviceOnline(request.getFrom());
-        if (deviceOpt.isEmpty()) {
+        if (!deviceOpt.isPresent()) {
             return;
         }
         Optional<DeviceDTO> dockOpt = deviceRedisService.getDeviceOnline(request.getGateway());
-        if (dockOpt.isEmpty()) {
+        if (!dockOpt.isPresent()) {
             return;
         }
 
@@ -347,7 +348,7 @@ public class SDKDeviceService extends AbstractDeviceService {
             log.error("The dock is not bound, please bind it first and then go online.");
             return;
         }
-        if (!Objects.requireNonNullElse(subDevice.getBoundStatus(), false)) {
+        if (!MoreObjects.firstNonNull(subDevice.getBoundStatus(), false)) {
             // Directly bind the drone of the dock to the same workspace as the dock.
             deviceService.bindDevice(DeviceDTO.builder().deviceSn(subDevice.getChildDeviceSn()).workspaceId(gateway.getWorkspaceId()).build());
             subDevice.setWorkspaceId(gateway.getWorkspaceId());
@@ -358,6 +359,7 @@ public class SDKDeviceService extends AbstractDeviceService {
         List<DeviceDTO> gatewaysList = deviceService.getDevicesByParams(
                 DeviceQueryParam.builder()
                         .childSn(deviceSn)
+                        .isAsc(false).orderBy(false)
                         .build());
         gatewaysList.stream()
                 .filter(gateway -> !gateway.getDeviceSn().equals(gatewaySn))
@@ -443,7 +445,7 @@ public class SDKDeviceService extends AbstractDeviceService {
 
         Optional<DeviceDTO> deviceOpt = deviceService.getDeviceBySn(device.getDeviceSn());
 
-        if (deviceOpt.isEmpty()) {
+        if (!deviceOpt.isPresent()) {
             device.setIconUrl(new DeviceIconUrl());
             // Set the icon of the gateway device displayed in the pilot's map, required in the TSA module.
             device.getIconUrl().setNormalIconUrl(IconUrlEnum.NORMAL_PERSON.getUrl());
@@ -479,7 +481,7 @@ public class SDKDeviceService extends AbstractDeviceService {
         if (Objects.nonNull(dock.getJobNumber())) {
             return;
         }
-        if (oldDockOpt.isEmpty()) {
+        if (!oldDockOpt.isPresent()) {
             deviceRedisService.setDeviceOsd(dockSn, dock);
             return;
         }

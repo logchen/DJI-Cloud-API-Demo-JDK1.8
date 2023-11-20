@@ -71,7 +71,7 @@ public enum EventsMethodEnum {
 
     JOYSTICK_INVALID_NOTIFY("joystick_invalid_notify", ChannelName.INBOUND_EVENTS_JOYSTICK_INVALID_NOTIFY, new TypeReference<JoystickInvalidNotify>() {}),
 
-    UNKNOWN("", ChannelName.DEFAULT, new TypeReference<>() {});
+    UNKNOWN("", ChannelName.DEFAULT, new TypeReference<Void>() {});
 
     private final String method;
 

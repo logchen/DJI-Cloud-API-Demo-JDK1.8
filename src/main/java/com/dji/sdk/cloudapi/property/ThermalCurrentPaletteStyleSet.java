@@ -4,6 +4,7 @@ import com.dji.sdk.cloudapi.device.PayloadIndex;
 import com.dji.sdk.cloudapi.device.ThermalPaletteStyleEnum;
 import com.dji.sdk.common.BaseModel;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.google.common.collect.ImmutableMap;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -36,7 +37,7 @@ public class ThermalCurrentPaletteStyleSet extends BaseModel {
 
     @JsonValue
     public Map<String, Object> toMap() {
-        return Map.of(payloadIndex.toString(), Map.of("thermal_current_palette_style", thermalCurrentPaletteStyle.getStyle()));
+        return ImmutableMap.of(payloadIndex.toString(), ImmutableMap.of("thermal_current_palette_style", thermalCurrentPaletteStyle.getStyle()));
     }
 
     public PayloadIndex getPayloadIndex() {

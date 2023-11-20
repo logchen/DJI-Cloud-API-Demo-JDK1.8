@@ -83,7 +83,7 @@ public class UserServiceImpl implements IUserService {
         }
 
         Optional<WorkspaceDTO> workspaceOpt = workspaceService.getWorkspaceByWorkspaceId(userEntity.getWorkspaceId());
-        if (workspaceOpt.isEmpty()) {
+        if (!workspaceOpt.isPresent()) {
             return new HttpResultResponse()
                     .setCode(HttpStatus.UNAUTHORIZED.value())
                     .setMessage("invalid workspace id");

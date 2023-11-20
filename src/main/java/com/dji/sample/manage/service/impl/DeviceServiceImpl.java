@@ -39,6 +39,7 @@ import com.dji.sdk.mqtt.state.StateSubscribe;
 import com.dji.sdk.mqtt.status.StatusSubscribe;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableList;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -128,7 +129,7 @@ public class DeviceServiceImpl implements IDeviceService {
     public void subDeviceOffline(String deviceSn) {
         // If no information about this device exists in the cache, the drone is considered to be offline.
         Optional<DeviceDTO> deviceOpt = deviceRedisService.getDeviceOnline(deviceSn);
-        if (deviceOpt.isEmpty()) {
+        if (!deviceOpt.isPresent()) {
             log.debug("The drone is already offline.");
             return;
         }
@@ -147,7 +148,7 @@ public class DeviceServiceImpl implements IDeviceService {
     public void gatewayOffline(String gatewaySn) {
         // If no information about this device exists in the cache, the drone is considered to be offline.
         Optional<DeviceDTO> deviceOpt = deviceRedisService.getDeviceOnline(gatewaySn);
-        if (deviceOpt.isEmpty()) {
+        if (!deviceOpt.isPresent()) {
             log.debug("The gateway is already offline.");
             return;
         }
@@ -225,8 +226,8 @@ public class DeviceServiceImpl implements IDeviceService {
         List<DeviceDTO> devicesList = this.getDevicesByParams(
                 DeviceQueryParam.builder()
                         .workspaceId(workspaceId)
-                        .domains(List.of(DeviceDomainEnum.REMOTER_CONTROL.getDomain(), DeviceDomainEnum.DOCK.getDomain()))
-                        .build());
+                        .domains(ImmutableList.of(DeviceDomainEnum.REMOTER_CONTROL.getDomain(), DeviceDomainEnum.DOCK.getDomain()))
+                        .orderBy(false).isAsc(false).build());
 
         devicesList.stream()
                 .filter(gateway -> DeviceDomainEnum.DOCK == gateway.getDomain() ||
@@ -246,7 +247,8 @@ public class DeviceServiceImpl implements IDeviceService {
             return;
         }
 
-        DeviceDTO subDevice = getDevicesByParams(DeviceQueryParam.builder().deviceSn(gateway.getChildDeviceSn()).build()).get(0);
+        DeviceDTO subDevice = getDevicesByParams(DeviceQueryParam.builder().deviceSn(gateway.getChildDeviceSn())
+                .orderBy(false).isAsc(false).build()).get(0);
         subDevice.setStatus(deviceRedisService.checkDeviceOnline(subDevice.getDeviceSn()));
         gateway.setChildren(subDevice);
 
@@ -262,7 +264,7 @@ public class DeviceServiceImpl implements IDeviceService {
         List<TopologyDeviceDTO> topologyDeviceList = this.getDevicesByParams(
                 DeviceQueryParam.builder()
                         .deviceSn(sn)
-                        .build())
+                        .orderBy(false).isAsc(false).build())
                 .stream()
                 .map(this::deviceConvertToTopologyDTO)
                 .collect(Collectors.toList());
@@ -410,7 +412,7 @@ public class DeviceServiceImpl implements IDeviceService {
         // First query the latest firmware version of the device model and compare it with the current firmware version
         // to see if it needs to be upgraded.
         Optional<DeviceFirmwareNoteDTO> firmwareReleaseNoteOpt = deviceFirmwareService.getLatestFirmwareReleaseNote(entity.getDeviceName());
-        if (firmwareReleaseNoteOpt.isEmpty()) {
+        if (!firmwareReleaseNoteOpt.isPresent()) {
             deviceDTO.setFirmwareStatus(DeviceFirmwareStatusEnum.NOT_UPGRADE);
             return;
         }
@@ -441,7 +443,7 @@ public class DeviceServiceImpl implements IDeviceService {
         }
 
         Optional<DeviceDTO> deviceOpt = deviceRedisService.getDeviceOnline(device.getDeviceSn());
-        if (deviceOpt.isEmpty()) {
+        if (!deviceOpt.isPresent()) {
             return false;
         }
 
@@ -497,7 +499,7 @@ public class DeviceServiceImpl implements IDeviceService {
         } else {
             deviceOpt = getDeviceBySn(deviceSn);
         }
-        if (deviceOpt.isEmpty()) {
+        if (!deviceOpt.isPresent()) {
             return;
         }
         DeviceDTO device = DeviceDTO.builder()
@@ -511,7 +513,7 @@ public class DeviceServiceImpl implements IDeviceService {
 
     @Override
     public Optional<DeviceDTO> getDeviceBySn(String sn) {
-        List<DeviceDTO> devicesList = this.getDevicesByParams(DeviceQueryParam.builder().deviceSn(sn).build());
+        List<DeviceDTO> devicesList = this.getDevicesByParams(DeviceQueryParam.builder().deviceSn(sn).orderBy(false).isAsc(false).build());
         if (devicesList.isEmpty()) {
             return Optional.empty();
         }
@@ -528,7 +530,7 @@ public class DeviceServiceImpl implements IDeviceService {
         }
 
         Optional<DeviceDTO> deviceOpt = deviceRedisService.getDeviceOnline(deviceOtaFirmwares.get(0).getSn());
-        if (deviceOpt.isEmpty()) {
+        if (!deviceOpt.isPresent()) {
             throw new RuntimeException("Device is offline.");
         }
         DeviceDTO device = deviceOpt.get();
@@ -556,7 +558,7 @@ public class DeviceServiceImpl implements IDeviceService {
      */
     private void checkOtaConditions(String dockSn) {
         Optional<OsdDock> deviceOpt = deviceRedisService.getDeviceOsd(dockSn, OsdDock.class);
-        if (deviceOpt.isEmpty()) {
+        if (!deviceOpt.isPresent()) {
             throw new RuntimeException("Dock is offline.");
         }
         boolean emergencyStopState = deviceOpt.get().getEmergencyStopState();
@@ -576,12 +578,12 @@ public class DeviceServiceImpl implements IDeviceService {
         PropertySetFieldEnum propertyEnum = PropertySetFieldEnum.find(property);
 
         Optional<DeviceDTO> dockOpt = deviceRedisService.getDeviceOnline(dockSn);
-        if (dockOpt.isEmpty()) {
+        if (!dockOpt.isPresent()) {
             throw new RuntimeException("Dock is offline.");
         }
         String childSn = dockOpt.get().getChildDeviceSn();
         Optional<OsdDockDrone> osdOpt = deviceRedisService.getDeviceOsd(childSn, OsdDockDrone.class);
-        if (osdOpt.isEmpty()) {
+        if (!osdOpt.isPresent()) {
             throw new RuntimeException("Device is offline.");
         }
 

@@ -109,7 +109,7 @@ public class ControlServiceImpl implements IControlService {
     private void checkFlyToCondition(String dockSn) {
         // TODO 设备固件版本不兼容情况
         Optional<DeviceDTO> dockOpt = deviceRedisService.getDeviceOnline(dockSn);
-        if (dockOpt.isEmpty()) {
+        if (!dockOpt.isPresent()) {
             throw new RuntimeException("The dock is offline, please restart the dock.");
         }
 
@@ -149,7 +149,7 @@ public class ControlServiceImpl implements IControlService {
 
     private void checkTakeoffCondition(String dockSn) {
         Optional<DeviceDTO> dockOpt = deviceRedisService.getDeviceOnline(dockSn);
-        if (dockOpt.isEmpty() || DockModeCodeEnum.IDLE != deviceService.getDockMode(dockSn)) {
+        if (!dockOpt.isPresent() || DockModeCodeEnum.IDLE != deviceService.getDockMode(dockSn)) {
             throw new RuntimeException("The current state does not support takeoff.");
         }
 
@@ -202,7 +202,7 @@ public class ControlServiceImpl implements IControlService {
 
     private Boolean checkPayloadAuthority(String sn, String payloadIndex) {
         Optional<DeviceDTO> dockOpt = deviceRedisService.getDeviceOnline(sn);
-        if (dockOpt.isEmpty()) {
+        if (!dockOpt.isPresent()) {
             throw new RuntimeException("The dock is offline, please restart the dock.");
         }
         return devicePayloadService.checkAuthorityPayload(dockOpt.get().getChildDeviceSn(), payloadIndex);

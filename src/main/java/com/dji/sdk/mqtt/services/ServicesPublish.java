@@ -5,6 +5,7 @@ import com.dji.sdk.mqtt.MqttGatewayPublish;
 import com.dji.sdk.mqtt.TopicConst;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.MoreObjects;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -67,12 +68,12 @@ public class ServicesPublish {
                         .setBid(bid)
                         .setTimestamp(System.currentTimeMillis())
                         .setMethod(method)
-                        .setData(Objects.requireNonNullElse(data, "")), retryCount, timeout);
+                        .setData(MoreObjects.firstNonNull(data, "")), retryCount, timeout);
         ServicesReplyReceiver replyReceiver = (ServicesReplyReceiver) response.getData();
         ServicesReplyData<T> reply = new ServicesReplyData<T>().setResult(replyReceiver.getResult());
         if (Objects.isNull(clazz)) {
-            reply.setOutput((T) Objects.requireNonNullElse(
-                    replyReceiver.getOutput(), Objects.requireNonNullElse(replyReceiver.getInfo(), "")));
+            reply.setOutput((T) MoreObjects.firstNonNull(
+                    replyReceiver.getOutput(), MoreObjects.firstNonNull(replyReceiver.getInfo(), "")));
             return response.setData(reply);
         }
         // put together in "output"

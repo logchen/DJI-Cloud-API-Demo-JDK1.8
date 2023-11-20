@@ -5,7 +5,7 @@ import com.dji.sdk.exception.CloudSDKException;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.*;
-import com.fasterxml.jackson.databind.json.JsonMapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
@@ -20,7 +20,7 @@ import java.time.format.DateTimeFormatter;
  */
 public class Common {
 
-    private static final JsonMapper.Builder MAPPER_BUILDER = JsonMapper.builder();
+    private static final ObjectMapper MAPPER_BUILDER = new ObjectMapper();
 
     static {
         JavaTimeModule timeModule = new JavaTimeModule();
@@ -29,10 +29,10 @@ public class Common {
         timeModule.addSerializer(LocalDateTime.class,
                 new LocalDateTimeSerializer(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
 
-        MAPPER_BUILDER.propertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)
-                .serializationInclusion(JsonInclude.Include.NON_ABSENT)
+        MAPPER_BUILDER.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE)
+                .setSerializationInclusion(JsonInclude.Include.NON_ABSENT)
                 .disable(MapperFeature.IGNORE_DUPLICATE_MODULE_REGISTRATIONS)
-                .addModule(timeModule)
+                .registerModule(timeModule)
                 .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
                 .configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false)
                 .configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true)
@@ -55,6 +55,6 @@ public class Common {
     }
 
     public static ObjectMapper getObjectMapper() {
-        return MAPPER_BUILDER.build();
+        return MAPPER_BUILDER.copy();
     }
 }

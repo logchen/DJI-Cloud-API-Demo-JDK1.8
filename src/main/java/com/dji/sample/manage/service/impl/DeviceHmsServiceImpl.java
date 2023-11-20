@@ -100,7 +100,7 @@ public class DeviceHmsServiceImpl extends AbstractHmsService implements IDeviceH
         deviceRedisService.addEndHmsKeys(sn, unReadList.stream().map(DeviceHmsDTO::getKey).toArray(String[]::new));
         // push to the web
         Optional<DeviceDTO> deviceOpt = deviceRedisService.getDeviceOnline(sn);
-        if (deviceOpt.isEmpty()) {
+        if (!deviceOpt.isPresent()) {
             return;
         }
         sendMessageService.sendBatch(deviceOpt.get().getWorkspaceId(), UserTypeEnum.WEB.getVal(),

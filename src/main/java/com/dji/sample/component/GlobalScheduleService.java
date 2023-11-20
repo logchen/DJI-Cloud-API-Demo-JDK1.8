@@ -35,7 +35,7 @@ public class GlobalScheduleService {
     /**
      * Check the status of the devices every 30 seconds. It is recommended to use cache.
      */
-    @Scheduled(initialDelay = 10, fixedRate = 30, timeUnit = TimeUnit.SECONDS)
+    @Scheduled(initialDelay = 10000, fixedRate = 30000)
     private void deviceStatusListen() {
         int start = RedisConst.DEVICE_ONLINE_PREFIX.length();
 

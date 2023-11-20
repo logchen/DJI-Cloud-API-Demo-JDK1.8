@@ -2,6 +2,7 @@ package com.dji.sdk.mqtt.drc;
 
 import com.dji.sdk.mqtt.MqttGatewayPublish;
 import com.dji.sdk.mqtt.TopicConst;
+import com.google.common.base.MoreObjects;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -33,7 +34,7 @@ public class DrcDownPublish {
         gatewayPublish.publish(topic,
                 new TopicDrcRequest<>()
                         .setMethod(method)
-                        .setData(Objects.requireNonNullElse(data, "")),
+                        .setData(MoreObjects.firstNonNull(data, "")),
                 publishCount);
     }
 

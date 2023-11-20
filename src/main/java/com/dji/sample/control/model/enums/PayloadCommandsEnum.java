@@ -2,6 +2,7 @@ package com.dji.sample.control.model.enums;
 
 import com.dji.sample.control.service.impl.*;
 import com.dji.sdk.cloudapi.control.PayloadControlMethodEnum;
+import com.dji.sdk.exception.CloudSDKException;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
@@ -53,6 +54,6 @@ public enum PayloadCommandsEnum {
     @JsonCreator(mode = JsonCreator.Mode.DELEGATING)
     public static PayloadCommandsEnum find(String method) {
         return Arrays.stream(values()).filter(methodEnum -> methodEnum.cmd.getPayloadMethod().getMethod().equals(method)).findAny()
-                .orElseThrow();
+                .orElseThrow(() -> new CloudSDKException("Can't find PayloadCommandsEnum for the method: " + method));
     }
 }

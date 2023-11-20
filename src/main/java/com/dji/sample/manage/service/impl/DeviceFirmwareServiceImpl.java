@@ -47,6 +47,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -109,7 +110,7 @@ public class DeviceFirmwareServiceImpl extends AbstractFirmwareService implement
             }
             Optional<DeviceFirmwareDTO> firmwareOpt = this.getFirmware(
                     workspaceId, upgradeDevice.getDeviceName(), upgradeDevice.getProductVersion());
-            if (firmwareOpt.isEmpty()) {
+            if (!firmwareOpt.isPresent()) {
                 throw new IllegalArgumentException("This firmware version does not exist or is not available.");
             }
             OtaCreateDevice ota = dto2OtaCreateDto(firmwareOpt.get());
@@ -138,7 +139,7 @@ public class DeviceFirmwareServiceImpl extends AbstractFirmwareService implement
         }
 
         Optional<DeviceDTO> deviceOpt = deviceRedisService.getDeviceOnline(sn);
-        if (deviceOpt.isEmpty()) {
+        if (!deviceOpt.isPresent()) {
             return null;
         }
 
@@ -207,7 +208,7 @@ public class DeviceFirmwareServiceImpl extends AbstractFirmwareService implement
             }
             RedisOpsUtils.set(key, System.currentTimeMillis());
             Optional<DeviceFirmwareDTO> firmwareOpt = verifyFirmwareFile(file);
-            if (firmwareOpt.isEmpty()) {
+            if (!firmwareOpt.isPresent()) {
                 throw new RuntimeException("The file format is incorrect.");
             }
 
@@ -314,7 +315,7 @@ public class DeviceFirmwareServiceImpl extends AbstractFirmwareService implement
         return DeviceFirmwareNoteDTO.builder()
                 .deviceName(entity.getDeviceName())
                 .productVersion(entity.getFirmwareVersion())
-                .releasedTime(LocalDate.ofInstant(Instant.ofEpochMilli(entity.getReleaseDate()), ZoneId.systemDefault()))
+                .releasedTime(ZonedDateTime.ofInstant(Instant.ofEpochMilli(entity.getReleaseDate()), ZoneId.systemDefault()).toLocalDate())
                 .releaseNote(entity.getReleaseNote())
                 .build();
     }
@@ -331,7 +332,7 @@ public class DeviceFirmwareServiceImpl extends AbstractFirmwareService implement
                 .firmwareId(entity.getFirmwareId())
                 .fileName(entity.getFileName())
                 .productVersion(entity.getFirmwareVersion())
-                .releasedTime(LocalDate.ofInstant(Instant.ofEpochMilli(entity.getReleaseDate()), ZoneId.systemDefault()))
+                .releasedTime(ZonedDateTime.ofInstant(Instant.ofEpochMilli(entity.getReleaseDate()), ZoneId.systemDefault()).toLocalDate())
                 .releaseNote(entity.getReleaseNote())
                 .firmwareStatus(entity.getStatus())
                 .workspaceId(entity.getWorkspaceId())

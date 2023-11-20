@@ -14,6 +14,8 @@ import com.dji.sample.manage.service.IDeviceDictionaryService;
 import com.dji.sample.manage.service.IDevicePayloadService;
 import com.dji.sample.manage.service.IDeviceRedisService;
 import com.dji.sdk.cloudapi.device.*;
+import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableList;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -139,7 +141,7 @@ public class DevicePayloadServiceImpl implements IDevicePayloadService {
      * @param payloads
      */
     public void updatePayloadControl(DeviceDTO drone, List<DevicePayloadReceiver> payloads) {
-        boolean match = payloads.stream().peek(p -> p.setSn(Objects.requireNonNullElse(p.getSn(),
+        boolean match = payloads.stream().peek(p -> p.setSn(MoreObjects.firstNonNull(p.getSn(),
                 p.getDeviceSn() + "-" + p.getPayloadIndex().getPosition().getPosition())))
                 .anyMatch(p -> ControlSourceEnum.UNKNOWN == p.getControlSource());
         if (match) {
@@ -148,7 +150,7 @@ public class DevicePayloadServiceImpl implements IDevicePayloadService {
 
         if (payloads.isEmpty()) {
             drone.setPayloadsList(null);
-            this.deletePayloadsByDeviceSn(List.of(drone.getDeviceSn()));
+            this.deletePayloadsByDeviceSn(ImmutableList.of(drone.getDeviceSn()));
             deviceRedisService.setDeviceOnline(drone);
             return;
         }

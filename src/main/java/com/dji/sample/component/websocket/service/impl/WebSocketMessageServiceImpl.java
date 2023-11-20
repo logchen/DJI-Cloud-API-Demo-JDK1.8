@@ -5,6 +5,7 @@ import com.dji.sample.component.websocket.service.IWebSocketManageService;
 import com.dji.sample.component.websocket.service.IWebSocketMessageService;
 import com.dji.sdk.websocket.WebSocketMessageResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.MoreObjects;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -87,7 +88,7 @@ public class WebSocketMessageServiceImpl implements IWebSocketMessageService {
                 webSocketManageService.getValueWithWorkspaceAndUserType(workspaceId, userType);
 
         this.sendBatch(sessions, new WebSocketMessageResponse()
-                        .setData(Objects.requireNonNullElse(data, ""))
+                        .setData(MoreObjects.firstNonNull(data, ""))
                         .setTimestamp(System.currentTimeMillis())
                         .setBizCode(bizCode));
     }

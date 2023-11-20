@@ -63,7 +63,7 @@ public class DeviceController {
     public HttpResultResponse getDevice(@PathVariable("workspace_id") String workspaceId,
                                         @PathVariable("device_sn") String deviceSn) {
         Optional<DeviceDTO> deviceOpt = deviceService.getDeviceBySn(deviceSn);
-        return deviceOpt.isEmpty() ? HttpResultResponse.error("device not found.") : HttpResultResponse.success(deviceOpt.get());
+        return !deviceOpt.isPresent() ? HttpResultResponse.error("device not found.") : HttpResultResponse.success(deviceOpt.get());
     }
 
     /**

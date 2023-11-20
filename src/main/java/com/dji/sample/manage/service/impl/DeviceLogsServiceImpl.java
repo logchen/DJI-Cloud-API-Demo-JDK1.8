@@ -34,6 +34,7 @@ import com.dji.sdk.mqtt.events.TopicEventsResponse;
 import com.dji.sdk.mqtt.services.ServicesReplyData;
 import com.dji.sdk.mqtt.services.TopicServicesResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.MoreObjects;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.MessageHeaders;
@@ -113,7 +114,7 @@ public class DeviceLogsServiceImpl extends AbstractLogService implements IDevice
         TopicServicesResponse<ServicesReplyData<FileUploadListResponse>> response = abstractLogService
                 .fileuploadList(SDKManager.getDeviceSDK(deviceSn), new FileUploadListRequest().setModuleList(domainList));
         for (FileUploadListFile file : response.getData().getOutput().getFiles()) {
-            if (file.getDeviceSn().isBlank()) {
+            if (file.getDeviceSn() == null || file.getDeviceSn().isEmpty()) {
                 file.setDeviceSn(deviceSn);
             }
         }
@@ -126,7 +127,7 @@ public class DeviceLogsServiceImpl extends AbstractLogService implements IDevice
                 .deviceSn(deviceSn)
                 .username(username)
                 .happenTime(param.getHappenTime())
-                .logsInfo(Objects.requireNonNullElse(param.getLogsInformation(), ""))
+                .logsInfo(MoreObjects.firstNonNull(param.getLogsInformation(), ""))
                 .logsId(bid)
                 .status(DeviceLogsStatusEnum.UPLOADING.getVal())
                 .build();
@@ -202,7 +203,7 @@ public class DeviceLogsServiceImpl extends AbstractLogService implements IDevice
         webSocketData.setSn(request.getGateway());
 
         Optional<DeviceDTO> deviceOpt = deviceRedisService.getDeviceOnline(request.getGateway());
-        if (deviceOpt.isEmpty()) {
+        if (!deviceOpt.isPresent()) {
             return null;
         }
 
@@ -307,7 +308,7 @@ public class DeviceLogsServiceImpl extends AbstractLogService implements IDevice
                 .logsInformation(entity.getLogsInfo())
                 .userName(entity.getUsername())
                 .deviceLogs(LogsFileUploadListDTO.builder().files(logsFileService.getLogsFileByLogsId(entity.getLogsId())).build())
-                .logsProgress(Objects.requireNonNullElse(progress, new LogsOutputProgressDTO()).getFiles())
+                .logsProgress(MoreObjects.firstNonNull(progress, new LogsOutputProgressDTO()).getFiles())
                 .deviceTopo(topologyService.getDeviceTopologyByGatewaySn(entity.getDeviceSn()).orElse(null))
                 .build();
     }

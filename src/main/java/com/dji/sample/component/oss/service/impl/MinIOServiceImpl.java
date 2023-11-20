@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -29,7 +30,7 @@ import java.util.Objects;
 public class MinIOServiceImpl implements IOssService {
 
     private MinioClient client;
-    
+
     @Override
     public OssTypeEnum getOssType() {
         return OssTypeEnum.MINIO;
@@ -54,15 +55,15 @@ public class MinIOServiceImpl implements IOssService {
         try {
             return new URL(
                     client.getPresignedObjectUrl(
-                                    GetPresignedObjectUrlArgs.builder()
-                                            .method(Method.GET)
-                                            .bucket(bucket)
-                                            .object(objectKey)
-                                            .expiry(Math.toIntExact(OssConfiguration.expire))
-                                            .build()));
+                            GetPresignedObjectUrlArgs.builder()
+                                    .method(Method.GET)
+                                    .bucket(bucket)
+                                    .object(objectKey)
+                                    .expiry(Math.toIntExact(OssConfiguration.expire))
+                                    .build()));
         } catch (ErrorResponseException | InsufficientDataException | InternalException |
-                InvalidKeyException | InvalidResponseException | IOException |
-                NoSuchAlgorithmException | XmlParserException | ServerException e) {
+                 InvalidKeyException | InvalidResponseException | IOException |
+                 NoSuchAlgorithmException | XmlParserException | ServerException e) {
             throw new RuntimeException("The file does not exist on the OssConfiguration.");
         }
     }
@@ -79,15 +80,31 @@ public class MinIOServiceImpl implements IOssService {
         return true;
     }
 
+    // 将 InputStream 转换为字节数组
+    private static byte[] inputStreamToByteArray(InputStream inputStream) throws IOException {
+        byte[] buffer = new byte[8192];
+        int bytesRead;
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+
+        while ((bytesRead = inputStream.read(buffer, 0, buffer.length)) != -1) {
+            byteArrayOutputStream.write(buffer, 0, bytesRead);
+        }
+
+        return byteArrayOutputStream.toByteArray();
+    }
+
     @Override
     public InputStream getObject(String bucket, String objectKey) {
         try {
             GetObjectResponse object = client.getObject(GetObjectArgs.builder().bucket(bucket).object(objectKey).build());
-            return new ByteArrayInputStream(object.readAllBytes());
+            byte[] datas = inputStreamToByteArray(object);
+            return new ByteArrayInputStream(datas);
         } catch (ErrorResponseException | InsufficientDataException | InternalException | InvalidKeyException | InvalidResponseException | IOException | NoSuchAlgorithmException | ServerException | XmlParserException e) {
             e.printStackTrace();
         }
-        return InputStream.nullInputStream();
+        byte[] emptyBytes = new byte[0];
+        // 使用空字节数组创建 ByteArrayInputStream
+        return new ByteArrayInputStream(emptyBytes);
     }
 
     @Override

@@ -3,6 +3,7 @@ package com.dji.sample.control.model.enums;
 import com.dji.sample.control.model.dto.*;
 import com.dji.sample.control.service.impl.RemoteDebugHandler;
 import com.dji.sdk.cloudapi.debug.DebugMethodEnum;
+import com.dji.sdk.exception.CloudSDKException;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 
@@ -54,20 +55,20 @@ public enum RemoteDebugMethodEnum {
     BATTERY_MAINTENANCE_SWITCH(DebugMethodEnum.BATTERY_MAINTENANCE_SWITCH, false, AlarmState.class),
 
     ALARM_STATE_SWITCH(DebugMethodEnum.ALARM_STATE_SWITCH, false, AlarmState.class),
-    
+
     BATTERY_STORE_MODE_SWITCH(DebugMethodEnum.BATTERY_STORE_MODE_SWITCH, false, BatteryStoreMode.class),
 
     SDR_WORK_MODE_SWITCH(DebugMethodEnum.SDR_WORKMODE_SWITCH, false, LinkWorkMode.class),
 
     AIR_CONDITIONER_MODE_SWITCH(DebugMethodEnum.AIR_CONDITIONER_MODE_SWITCH, false, AirConditionerMode.class);
 
-    private DebugMethodEnum debugMethodEnum;
+    private final DebugMethodEnum debugMethodEnum;
 
-    private String method;
+    private final String method;
 
-    private boolean progress;
-    
-    private Class<? extends RemoteDebugHandler> clazz;
+    private final boolean progress;
+
+    private final Class<? extends RemoteDebugHandler> clazz;
 
     RemoteDebugMethodEnum(DebugMethodEnum debugMethodEnum, boolean progress, Class<? extends RemoteDebugHandler> clazz) {
         this.debugMethodEnum = debugMethodEnum;
@@ -88,9 +89,9 @@ public enum RemoteDebugMethodEnum {
         return Arrays.stream(values())
                 .filter(methodEnum -> methodEnum.method.equals(method)
                         || (Objects.nonNull(methodEnum.debugMethodEnum)
-                            && methodEnum.debugMethodEnum.getMethod().equals(method)))
+                        && methodEnum.debugMethodEnum.getMethod().equals(method)))
                 .findAny()
-                .orElseThrow();
+                .orElseThrow(() -> new CloudSDKException("Can't find RemoteDebugMethodEnum for the method: " + method));
     }
 
 }

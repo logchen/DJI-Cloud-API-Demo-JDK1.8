@@ -34,6 +34,7 @@ import com.dji.sdk.mqtt.events.TopicEventsResponse;
 import com.dji.sdk.mqtt.services.ServicesReplyData;
 import com.dji.sdk.mqtt.services.TopicServicesResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableList;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpStatus;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -87,7 +88,7 @@ public class FlightTaskServiceImpl extends AbstractWaylineService implements IFl
     @Qualifier("mediaServiceImpl")
     private AbstractMediaService abstractMediaService;
 
-    @Scheduled(initialDelay = 10, fixedRate = 5, timeUnit = TimeUnit.SECONDS)
+    @Scheduled(initialDelay = 10000, fixedRate = 5000)
     public void checkScheduledJob() {
         Object jobIdValue = RedisOpsUtils.zGetMin(RedisConst.WAYLINE_JOB_TIMED_EXECUTE);
         if (Objects.isNull(jobIdValue)) {
@@ -129,10 +130,10 @@ public class FlightTaskServiceImpl extends AbstractWaylineService implements IFl
         }
     }
 
-    @Scheduled(initialDelay = 10, fixedRate = 5, timeUnit = TimeUnit.SECONDS)
+    @Scheduled(initialDelay = 10000, fixedRate = 5000)
     public void prepareConditionJob() {
         Optional<ConditionalWaylineJobKey> jobKeyOpt = waylineRedisService.getNearestConditionalWaylineJob();
-        if (jobKeyOpt.isEmpty()) {
+        if (!jobKeyOpt.isPresent()) {
             return;
         }
         ConditionalWaylineJobKey jobKey = jobKeyOpt.get();
@@ -155,7 +156,7 @@ public class FlightTaskServiceImpl extends AbstractWaylineService implements IFl
                 .code(HttpStatus.SC_INTERNAL_SERVER_ERROR).build();
         try {
             Optional<WaylineJobDTO> waylineJobOpt = waylineRedisService.getConditionalWaylineJob(jobKey.getJobId());
-            if (waylineJobOpt.isEmpty()) {
+            if (!waylineJobOpt.isPresent()) {
                 job.setCode(CommonErrorEnum.REDIS_DATA_NOT_FOUND.getCode());
                 waylineJobService.updateJob(job);
                 waylineRedisService.removePrepareConditionalWaylineJob(jobKey);
@@ -195,8 +196,8 @@ public class FlightTaskServiceImpl extends AbstractWaylineService implements IFl
             return;
         }
         long now = System.currentTimeMillis() / 1000;
-        param.setTaskDays(List.of(now));
-        param.setTaskPeriods(List.of(List.of(now)));
+        param.setTaskDays(ImmutableList.of(now));
+        param.setTaskPeriods(ImmutableList.of(ImmutableList.of(now)));
     }
 
 
@@ -228,19 +229,19 @@ public class FlightTaskServiceImpl extends AbstractWaylineService implements IFl
         fillImmediateTime(param);
 
         for (Long taskDay : param.getTaskDays()) {
-            LocalDate date = LocalDate.ofInstant(Instant.ofEpochSecond(taskDay), ZoneId.systemDefault());
+            LocalDate date = ZonedDateTime.ofInstant(Instant.ofEpochSecond(taskDay), ZoneId.systemDefault()).toLocalDate();
             for (List<Long> taskPeriod : param.getTaskPeriods()) {
-                long beginTime = LocalDateTime.of(date, LocalTime.ofInstant(Instant.ofEpochSecond(taskPeriod.get(0)), ZoneId.systemDefault()))
+                long beginTime = LocalDateTime.of(date, ZonedDateTime.ofInstant(Instant.ofEpochSecond(taskPeriod.get(0)), ZoneId.systemDefault()).toLocalTime())
                         .atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
                 long endTime = taskPeriod.size() > 1 ?
-                        LocalDateTime.of(date, LocalTime.ofInstant(Instant.ofEpochSecond(taskPeriod.get(1)), ZoneId.systemDefault()))
+                        LocalDateTime.of(date, ZonedDateTime.ofInstant(Instant.ofEpochSecond(taskPeriod.get(1)), ZoneId.systemDefault()).toLocalTime())
                                 .atZone(ZoneId.systemDefault()).toInstant().toEpochMilli() : beginTime;
                 if (TaskTypeEnum.IMMEDIATE != param.getTaskType() && endTime < System.currentTimeMillis()) {
                     continue;
                 }
 
                 Optional<WaylineJobDTO> waylineJobOpt = waylineJobService.createWaylineJob(param, customClaim.getWorkspaceId(), customClaim.getUsername(), beginTime, endTime);
-                if (waylineJobOpt.isEmpty()) {
+                if (!waylineJobOpt.isPresent()) {
                     throw new SQLException("Failed to create wayline job.");
                 }
                 WaylineJobDTO waylineJob = waylineJobOpt.get();
@@ -291,7 +292,7 @@ public class FlightTaskServiceImpl extends AbstractWaylineService implements IFl
     private Boolean prepareFlightTask(WaylineJobDTO waylineJob) throws SQLException {
         // get wayline file
         Optional<GetWaylineListResponse> waylineFile = waylineFileService.getWaylineByWaylineId(waylineJob.getWorkspaceId(), waylineJob.getFileId());
-        if (waylineFile.isEmpty()) {
+        if (!waylineFile.isPresent()) {
             throw new SQLException("Wayline file doesn't exist.");
         }
 
@@ -339,7 +340,7 @@ public class FlightTaskServiceImpl extends AbstractWaylineService implements IFl
     public Boolean executeFlightTask(String workspaceId, String jobId) {
         // get job
         Optional<WaylineJobDTO> waylineJob = waylineJobService.getJobByJobId(workspaceId, jobId);
-        if (waylineJob.isEmpty()) {
+        if (!waylineJob.isPresent()) {
             throw new IllegalArgumentException("Job doesn't exist.");
         }
 
@@ -424,7 +425,7 @@ public class FlightTaskServiceImpl extends AbstractWaylineService implements IFl
     @Override
     public void uploadMediaHighestPriority(String workspaceId, String jobId) {
         Optional<WaylineJobDTO> jobOpt = waylineJobService.getJobByJobId(workspaceId, jobId);
-        if (jobOpt.isEmpty()) {
+        if (!jobOpt.isPresent()) {
             throw new RuntimeException(CommonErrorEnum.ILLEGAL_ARGUMENT.getMessage());
         }
 
@@ -444,7 +445,7 @@ public class FlightTaskServiceImpl extends AbstractWaylineService implements IFl
     @Override
     public void updateJobStatus(String workspaceId, String jobId, UpdateJobParam param) {
         Optional<WaylineJobDTO> waylineJobOpt = waylineJobService.getJobByJobId(workspaceId, jobId);
-        if (waylineJobOpt.isEmpty()) {
+        if (!waylineJobOpt.isPresent()) {
             throw new RuntimeException("The job does not exist.");
         }
         WaylineJobDTO waylineJob = waylineJobOpt.get();
@@ -496,7 +497,7 @@ public class FlightTaskServiceImpl extends AbstractWaylineService implements IFl
     @Override
     public void retryPrepareJob(ConditionalWaylineJobKey jobKey, WaylineJobDTO waylineJob) {
         Optional<WaylineJobDTO> childJobOpt = waylineJobService.createWaylineJobByParent(jobKey.getWorkspaceId(), jobKey.getJobId());
-        if (childJobOpt.isEmpty()) {
+        if (!childJobOpt.isPresent()) {
             log.error("Failed to create wayline job.");
             return;
         }
@@ -526,7 +527,7 @@ public class FlightTaskServiceImpl extends AbstractWaylineService implements IFl
         }
 
         Optional<DeviceDTO> deviceOpt = deviceRedisService.getDeviceOnline(response.getGateway());
-        if (deviceOpt.isEmpty()) {
+        if (!deviceOpt.isPresent()) {
             return null;
         }
         DeviceDTO device = deviceOpt.get();
@@ -538,7 +539,7 @@ public class FlightTaskServiceImpl extends AbstractWaylineService implements IFl
                     return null;
                 }
                 Optional<WaylineJobDTO> waylineJobOpt = waylineRedisService.getConditionalWaylineJob(jobId);
-                if (waylineJobOpt.isEmpty()) {
+                if (!waylineJobOpt.isPresent()) {
                     log.info("The conditional job has expired and will no longer be executed.");
                     return new TopicEventsResponse<>();
                 }

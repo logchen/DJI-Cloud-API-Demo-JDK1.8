@@ -22,7 +22,7 @@ public class PayloadFirmwareVersion {
     public PayloadFirmwareVersion(Map<String, Object> map) {
         Map.Entry<String, Object> entry = (Map.Entry<String, Object>) map.entrySet().toArray()[0];
         this.position = PayloadPositionEnum.find(Integer.parseInt(entry.getKey().split("-")[1]));
-        this.firmwareVersion = ((Map<String, String>) entry.getValue()).values().toArray(String[]::new)[0];
+        this.firmwareVersion = ((Map<String, String>) entry.getValue()).values().toArray(new String[0])[0];
     }
 
     @Override

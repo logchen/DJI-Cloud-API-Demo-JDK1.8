@@ -50,7 +50,7 @@ public class SDKRemoteDebug extends AbstractDebugService {
 
         Optional<DeviceDTO> deviceOpt = deviceRedisService.getDeviceOnline(sn);
 
-        if (deviceOpt.isEmpty()) {
+        if (!deviceOpt.isPresent()) {
             throw new RuntimeException("The device is offline.");
         }
 

@@ -32,7 +32,7 @@ public abstract class PayloadCommandsHandler {
     public boolean canPublish(String deviceSn) {
         Optional<OsdDockDrone> deviceOpt = SpringBeanUtilsTest.getBean(IDeviceRedisService.class)
                 .getDeviceOsd(deviceSn, OsdDockDrone.class);
-        if (deviceOpt.isEmpty()) {
+        if (!deviceOpt.isPresent()) {
             throw new RuntimeException("The device is offline.");
         }
         osdCamera = deviceOpt.get().getCameras().stream()
@@ -44,7 +44,7 @@ public abstract class PayloadCommandsHandler {
 
     private String checkDockOnline(String dockSn) {
         Optional<DeviceDTO> deviceOpt = SpringBeanUtilsTest.getBean(IDeviceRedisService.class).getDeviceOnline(dockSn);
-        if (deviceOpt.isEmpty()) {
+        if (!deviceOpt.isPresent()) {
             throw new RuntimeException("The dock is offline.");
         }
         return deviceOpt.get().getChildDeviceSn();

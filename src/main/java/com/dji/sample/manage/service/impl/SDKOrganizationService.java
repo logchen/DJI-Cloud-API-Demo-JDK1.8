@@ -65,7 +65,7 @@ public class SDKOrganizationService extends AbstractOrganizationService {
         }
 
         Optional<WorkspaceDTO> workspace = workspaceService.getWorkspaceNameByBindCode(organizationGet.getDeviceBindingCode());
-        if (workspace.isEmpty()) {
+        if (!workspace.isPresent()) {
             return new TopicRequestsResponse().setData(MqttReply.error(CommonErrorEnum.GET_ORGANIZATION_FAILED));
         }
 

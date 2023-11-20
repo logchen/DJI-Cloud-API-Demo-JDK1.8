@@ -82,7 +82,7 @@ public class SDKWaylineService extends AbstractWaylineService {
         }
 
         Optional<DeviceDTO> deviceOpt = deviceRedisService.getDeviceOnline(response.getGateway());
-        if (deviceOpt.isEmpty()) {
+        if (!deviceOpt.isPresent()) {
             return new TopicEventsResponse<>();
         }
 
@@ -125,12 +125,12 @@ public class SDKWaylineService extends AbstractWaylineService {
         String jobId = response.getData().getFlightId();
 
         Optional<DeviceDTO> deviceOpt = deviceRedisService.getDeviceOnline(response.getGateway());
-        if (deviceOpt.isEmpty()) {
+        if (!deviceOpt.isPresent()) {
             log.error("The device is offline, please try again later.");
             return new TopicRequestsResponse().setData(MqttReply.error(CommonErrorEnum.DEVICE_OFFLINE));
         }
         Optional<WaylineJobDTO> waylineJobOpt = waylineJobService.getJobByJobId(deviceOpt.get().getWorkspaceId(), jobId);
-        if (waylineJobOpt.isEmpty()) {
+        if (!waylineJobOpt.isPresent()) {
             log.error("The wayline job does not exist.");
             return new TopicRequestsResponse().setData(MqttReply.error(CommonErrorEnum.ILLEGAL_ARGUMENT));
         }
@@ -139,7 +139,7 @@ public class SDKWaylineService extends AbstractWaylineService {
 
         // get wayline file
         Optional<GetWaylineListResponse> waylineFile = waylineFileService.getWaylineByWaylineId(waylineJob.getWorkspaceId(), waylineJob.getFileId());
-        if (waylineFile.isEmpty()) {
+        if (!waylineFile.isPresent()) {
             log.error("The wayline file does not exist.");
             return new TopicRequestsResponse().setData(MqttReply.error(CommonErrorEnum.ILLEGAL_ARGUMENT));
         }

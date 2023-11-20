@@ -11,6 +11,8 @@ import com.dji.sdk.common.HttpResultResponse;
 import com.dji.sdk.common.SDKManager;
 import com.dji.sdk.mqtt.services.ServicesReplyData;
 import com.dji.sdk.mqtt.services.TopicServicesResponse;
+import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableList;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -53,14 +55,15 @@ public class LiveStreamServiceImpl implements ILiveStreamService {
         List<DeviceDTO> devicesList = deviceService.getDevicesByParams(
                 DeviceQueryParam.builder()
                         .workspaceId(workspaceId)
-                        .domains(List.of(DeviceDomainEnum.DRONE.getDomain(), DeviceDomainEnum.DOCK.getDomain()))
+                        .domains(ImmutableList.of(DeviceDomainEnum.DRONE.getDomain(), DeviceDomainEnum.DOCK.getDomain()))
+                        .orderBy(false).isAsc(false)
                         .build());
 
         // Query the live capability of each drone.
         return devicesList.stream()
                 .filter(device -> deviceRedisService.checkDeviceOnline(device.getDeviceSn()))
                 .map(device -> CapacityDeviceDTO.builder()
-                        .name(Objects.requireNonNullElse(device.getNickname(), device.getDeviceName()))
+                        .name(MoreObjects.firstNonNull(device.getNickname(), device.getDeviceName()))
                         .sn(device.getDeviceSn())
                         .camerasList(capacityCameraService.getCapacityCameraByDeviceSn(device.getDeviceSn()))
                         .build())
@@ -187,7 +190,7 @@ public class LiveStreamServiceImpl implements ILiveStreamService {
 
         Optional<DeviceDTO> deviceOpt = deviceService.getDeviceBySn(videoIdArr[0]);
         // Check if the gateway device connected to this drone exists
-        if (deviceOpt.isEmpty()) {
+        if (!deviceOpt.isPresent()) {
             return HttpResultResponse.error(LiveErrorCodeEnum.NO_AIRCRAFT);
         }
 
@@ -197,6 +200,7 @@ public class LiveStreamServiceImpl implements ILiveStreamService {
         List<DeviceDTO> gatewayList = deviceService.getDevicesByParams(
                 DeviceQueryParam.builder()
                         .childSn(videoIdArr[0])
+                        .isAsc(false).orderBy(false)
                         .build());
         if (gatewayList.isEmpty()) {
             return HttpResultResponse.error(LiveErrorCodeEnum.NO_FLIGHT_CONTROL);

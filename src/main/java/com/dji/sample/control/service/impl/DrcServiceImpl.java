@@ -35,6 +35,8 @@ import com.dji.sdk.mqtt.services.ServicesReplyData;
 import com.dji.sdk.mqtt.services.TopicServicesResponse;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -134,7 +136,7 @@ public class DrcServiceImpl implements IDrcService {
         Optional<DeviceDTO> dockOpt = deviceRedisService.getDeviceOnline(dockSn);
         if (dockOpt.isPresent() && (DockModeCodeEnum.IDLE == dockMode || DockModeCodeEnum.WORKING == dockMode)) {
             Optional<OsdDockDrone> deviceOsd = deviceRedisService.getDeviceOsd(dockOpt.get().getChildDeviceSn(), OsdDockDrone.class);
-            if (deviceOsd.isEmpty() || deviceOsd.get().getElevation() <= 0) {
+            if (!deviceOsd.isPresent() || deviceOsd.get().getElevation() <= 0) {
                 throw new RuntimeException("The drone is not in the sky and cannot enter command flight mode.");
             }
         } else {
@@ -158,7 +160,7 @@ public class DrcServiceImpl implements IDrcService {
         if (deviceService.checkDockDrcMode(param.getDockSn())
                 && param.getClientId().equals(this.getDrcModeInRedis(param.getDockSn()))) {
             refreshAcl(param.getDockSn(), param.getClientId(), topic, subTopic);
-            return JwtAclDTO.builder().sub(List.of(subTopic)).pub(List.of(pubTopic)).build();
+            return JwtAclDTO.builder().sub(ImmutableList.of(subTopic)).pub(ImmutableList.of(pubTopic)).build();
         }
 
         checkDrcModeCondition(workspaceId, param.getDockSn());
@@ -168,9 +170,9 @@ public class DrcServiceImpl implements IDrcService {
                 new DrcModeEnterRequest()
                         .setMqttBroker(MqttPropertyConfiguration.getMqttBrokerWithDrc(param.getDockSn() + "-" + System.currentTimeMillis(), param.getDockSn(),
                                 RedisConst.DRC_MODE_ALIVE_SECOND.longValue(),
-                                Map.of(MapKeyConst.ACL, objectMapper.convertValue(JwtAclDTO.builder()
-                                        .pub(List.of(subTopic))
-                                        .sub(List.of(pubTopic))
+                                ImmutableMap.of(MapKeyConst.ACL, objectMapper.convertValue(JwtAclDTO.builder()
+                                        .pub(ImmutableList.of(subTopic))
+                                        .sub(ImmutableList.of(pubTopic))
                                         .build(), new TypeReference<Map<String, ?>>() {}))))
                         .setHsiFrequency(1).setOsdFrequency(10));
 
@@ -180,7 +182,7 @@ public class DrcServiceImpl implements IDrcService {
         }
 
         refreshAcl(param.getDockSn(), param.getClientId(), pubTopic, subTopic);
-        return JwtAclDTO.builder().sub(List.of(subTopic)).pub(List.of(pubTopic)).build();
+        return JwtAclDTO.builder().sub(ImmutableList.of(subTopic)).pub(ImmutableList.of(pubTopic)).build();
     }
 
     private void refreshAcl(String dockSn, String clientId, String pubTopic, String subTopic) {

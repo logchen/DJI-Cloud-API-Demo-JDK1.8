@@ -100,7 +100,7 @@ public class FileServiceImpl implements IFileService {
     @Override
     public URL getObjectUrl(String workspaceId, String fileId) {
         Optional<MediaFileEntity> mediaFileOpt = getMediaByFileId(workspaceId, fileId);
-        if (mediaFileOpt.isEmpty()) {
+        if (!mediaFileOpt.isPresent()) {
             throw new IllegalArgumentException("{} doesn't exist.");
         }
 

@@ -36,6 +36,6 @@ public class WorkspaceController {
         CustomClaim customClaim = (CustomClaim)request.getAttribute(TOKEN_CLAIM);
         Optional<WorkspaceDTO> workspaceOpt = workspaceService.getWorkspaceByWorkspaceId(customClaim.getWorkspaceId());
 
-        return workspaceOpt.isEmpty() ? HttpResultResponse.error() : HttpResultResponse.success(workspaceOpt.get());
+        return !workspaceOpt.isPresent() ? HttpResultResponse.error() : HttpResultResponse.success(workspaceOpt.get());
     }
 }

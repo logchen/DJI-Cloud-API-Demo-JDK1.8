@@ -3,6 +3,7 @@ package com.dji.sdk.config;
 import com.dji.sdk.common.Common;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.MoreObjects;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.PropertyValue;
 import org.springframework.web.servlet.mvc.method.annotation.ExtendedServletRequestDataBinder;
@@ -41,7 +42,7 @@ public class GetSnakeDataBinder extends ExtendedServletRequestDataBinder {
             }
 
             Field field = fieldMap.get(property.getName());
-            List list = (List) Objects.requireNonNullElse(property.getConvertedValue(), new ArrayList<>());
+            List list = (List) MoreObjects.firstNonNull(property.getConvertedValue(), new ArrayList<>());
             list.addAll((List) convertValue(field, this.getTarget(), property.getValue()));
             if (!list.isEmpty()) {
                 property.setConvertedValue(list);
@@ -57,7 +58,7 @@ public class GetSnakeDataBinder extends ExtendedServletRequestDataBinder {
                     ((List) propertyValue.getConvertedValue()).addAll((List) property.getConvertedValue());
                 }
             } else {
-                mpvs.addPropertyValue(new PropertyValue(fieldName, Objects.requireNonNullElse(property.getConvertedValue(), property.getValue())));
+                mpvs.addPropertyValue(new PropertyValue(fieldName, MoreObjects.firstNonNull(property.getConvertedValue(), property.getValue())));
             }
             mpvs.removePropertyValue(property);
         }

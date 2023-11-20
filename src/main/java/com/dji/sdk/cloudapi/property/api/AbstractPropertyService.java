@@ -11,6 +11,7 @@ import com.dji.sdk.exception.CloudSDKException;
 import com.dji.sdk.mqtt.property.PropertySetPublish;
 import com.dji.sdk.mqtt.property.PropertySetReplyResultEnum;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableMap;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
@@ -62,7 +63,7 @@ public abstract class AbstractPropertyService {
                         .map(JsonProperty::value).orElse(field.getName()), value);
                 field.setAccessible(false);
                 PropertySetReplyResultEnum result = propertySetPublish.publish(
-                        gateway.getGatewaySn(), Map.of(propertyEnum.getProperty(), map));
+                        gateway.getGatewaySn(), ImmutableMap.of(propertyEnum.getProperty(), map));
                 if (PropertySetReplyResultEnum.SUCCESS != result) {
                     return result;
                 }

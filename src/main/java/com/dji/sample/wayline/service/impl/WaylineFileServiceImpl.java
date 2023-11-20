@@ -17,6 +17,7 @@ import com.dji.sdk.cloudapi.wayline.GetWaylineListResponse;
 import com.dji.sdk.cloudapi.wayline.WaylineTypeEnum;
 import com.dji.sdk.common.Pagination;
 import com.dji.sdk.common.PaginationData;
+import com.google.common.collect.ImmutableList;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.Node;
@@ -94,7 +95,7 @@ public class WaylineFileServiceImpl implements IWaylineFileService {
     @Override
     public URL getObjectUrl(String workspaceId, String waylineId) throws SQLException {
         Optional<GetWaylineListResponse> waylineOpt = this.getWaylineByWaylineId(workspaceId, waylineId);
-        if (waylineOpt.isEmpty()) {
+        if (!waylineOpt.isPresent()) {
             throw new SQLException(waylineId + " does not exist.");
         }
         return ossService.getObjectUrl(OssConfiguration.bucket, waylineOpt.get().getObjectKey());
@@ -148,7 +149,7 @@ public class WaylineFileServiceImpl implements IWaylineFileService {
     @Override
     public Boolean deleteByWaylineId(String workspaceId, String waylineId) {
         Optional<GetWaylineListResponse> waylineOpt = this.getWaylineByWaylineId(workspaceId, waylineId);
-        if (waylineOpt.isEmpty()) {
+        if (!waylineOpt.isPresent()) {
             return true;
         }
         GetWaylineListResponse wayline = waylineOpt.get();
@@ -165,7 +166,7 @@ public class WaylineFileServiceImpl implements IWaylineFileService {
     @Override
     public void importKmzFile(MultipartFile file, String workspaceId, String creator) {
         Optional<WaylineFileDTO> waylineFileOpt = validKmzFile(file);
-        if (waylineFileOpt.isEmpty()) {
+        if (!waylineFileOpt.isPresent()) {
             throw new RuntimeException("The file format is incorrect.");
         }
 
@@ -220,11 +221,11 @@ public class WaylineFileServiceImpl implements IWaylineFileService {
 
                 return Optional.of(WaylineFileDTO.builder()
                         .droneModelKey(String.format("%s-%s-%s", DeviceDomainEnum.DRONE.getDomain(), type, subType))
-                        .payloadModelKeys(List.of(String.format("%s-%s-%s",DeviceDomainEnum.PAYLOAD.getDomain(), payloadType, payloadSubType)))
+                        .payloadModelKeys(ImmutableList.of(String.format("%s-%s-%s",DeviceDomainEnum.PAYLOAD.getDomain(), payloadType, payloadSubType)))
                         .objectKey(OssConfiguration.objectDirPrefix + File.separator + filename)
                         .name(filename.substring(0, filename.lastIndexOf(WAYLINE_FILE_SUFFIX)))
                         .sign(DigestUtils.md5DigestAsHex(file.getInputStream()))
-                        .templateTypes(List.of(WaylineTypeEnum.find(templateType).getValue()))
+                        .templateTypes(ImmutableList.of(WaylineTypeEnum.find(templateType).getValue()))
                         .build());
             }
 

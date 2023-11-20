@@ -27,7 +27,7 @@ public class RequestConfigContext extends AbstractConfigService {
     public TopicRequestsResponse<ProductConfigResponse> requestsConfig(TopicRequestsRequest<RequestsConfigRequest> request, MessageHeaders headers) {
         RequestsConfigRequest configReceiver = request.getData();
         Optional<CustomizeConfigScopeEnum> scopeEnumOpt = CustomizeConfigScopeEnum.find(configReceiver.getConfigScope().getScope());
-        if (scopeEnumOpt.isEmpty()) {
+        if (!scopeEnumOpt.isPresent()) {
             return new TopicRequestsResponse().setData(MqttReply.error(CommonErrorEnum.ILLEGAL_ARGUMENT));
         }
 

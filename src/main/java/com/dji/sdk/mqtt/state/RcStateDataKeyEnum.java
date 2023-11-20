@@ -3,6 +3,8 @@ package com.dji.sdk.mqtt.state;
 import com.dji.sdk.cloudapi.device.*;
 import com.dji.sdk.cloudapi.livestream.DockLivestreamAbilityUpdate;
 import com.dji.sdk.exception.CloudSDKException;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -16,13 +18,13 @@ import java.util.Set;
  */
 public enum RcStateDataKeyEnum {
 
-    FIRMWARE_VERSION(Set.of("firmware_version"), RcFirmwareVersion.class),
+    FIRMWARE_VERSION(ImmutableSet.of("firmware_version"), RcFirmwareVersion.class),
 
-    LIVE_CAPACITY(Set.of("live_capacity"), DockLivestreamAbilityUpdate.class),
+    LIVE_CAPACITY(ImmutableSet.of("live_capacity"), DockLivestreamAbilityUpdate.class),
 
-    CONTROL_SOURCE(Set.of("control_source"), RcDroneControlSource.class),
+    CONTROL_SOURCE(ImmutableSet.of("control_source"), RcDroneControlSource.class),
 
-    LIVE_STATUS(Set.of("live_status"), RcLiveStatus.class),
+    LIVE_STATUS(ImmutableSet.of("live_status"), RcLiveStatus.class),
 
     PAYLOAD_FIRMWARE(PayloadModelEnum.getAllModelWithPosition(), PayloadFirmwareVersion.class),
     ;

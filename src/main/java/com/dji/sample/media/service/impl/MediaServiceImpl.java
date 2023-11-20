@@ -102,7 +102,7 @@ public class MediaServiceImpl extends AbstractMediaService implements IMediaServ
         Optional<DeviceDTO> deviceOpt = deviceRedisService.getDeviceOnline(request.getGateway());
         MediaFileCountDTO mediaFileCount = mediaRedisService.getMediaCount(request.getGateway(), jobId);
         // duplicate data
-        if (deviceOpt.isEmpty()
+        if (!deviceOpt.isPresent()
                 || (Objects.nonNull(mediaFileCount) && request.getBid().equals(mediaFileCount.getBid())
                 && request.getTid().equals(mediaFileCount.getTid()))) {
             return new TopicEventsResponse<MqttReply>().setData(MqttReply.success());
@@ -139,7 +139,7 @@ public class MediaServiceImpl extends AbstractMediaService implements IMediaServ
         mediaRedisService.setMediaHighestPriority(request.getGateway(), countDTO);
 
         Optional<DeviceDTO> deviceOpt = deviceRedisService.getDeviceOnline(request.getGateway());
-        if (deviceOpt.isEmpty()) {
+        if (!deviceOpt.isPresent()) {
             return null;
         }
 

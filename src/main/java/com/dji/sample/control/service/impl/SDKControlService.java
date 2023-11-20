@@ -42,7 +42,7 @@ public class SDKControlService extends AbstractControlService {
         String dockSn  = request.getGateway();
 
         Optional<DeviceDTO> deviceOpt = deviceRedisService.getDeviceOnline(dockSn);
-        if (deviceOpt.isEmpty()) {
+        if (!deviceOpt.isPresent()) {
             log.error("The dock is offline.");
             return null;
         }
@@ -62,7 +62,7 @@ public class SDKControlService extends AbstractControlService {
         String dockSn  = request.getGateway();
 
         Optional<DeviceDTO> deviceOpt = deviceRedisService.getDeviceOnline(dockSn);
-        if (deviceOpt.isEmpty()) {
+        if (!deviceOpt.isPresent()) {
             log.error("The dock is offline.");
             return null;
         }
@@ -83,7 +83,7 @@ public class SDKControlService extends AbstractControlService {
         String dockSn  = request.getGateway();
 
         Optional<DeviceDTO> deviceOpt = deviceRedisService.getDeviceOnline(dockSn);
-        if (deviceOpt.isEmpty()) {
+        if (!deviceOpt.isPresent()) {
             return null;
         }
 
@@ -103,7 +103,7 @@ public class SDKControlService extends AbstractControlService {
         String dockSn  = request.getGateway();
 
         Optional<DeviceDTO> deviceOpt = deviceRedisService.getDeviceOnline(dockSn);
-        if (deviceOpt.isEmpty()) {
+        if (!deviceOpt.isPresent()) {
             return null;
         }
 

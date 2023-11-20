@@ -16,6 +16,7 @@ import com.dji.sample.component.oss.model.OssConfiguration;
 import com.dji.sample.component.oss.service.IOssService;
 import com.dji.sdk.cloudapi.storage.CredentialsToken;
 import com.dji.sdk.cloudapi.storage.OssTypeEnum;
+import com.google.common.collect.ImmutableList;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -114,8 +115,8 @@ public class AmazonS3ServiceImpl implements IOssService {
 
         CORSRule rule = new CORSRule()
                 .withId("CORSAccessRule")
-                .withAllowedOrigins(List.of("*"))
-                .withAllowedHeaders(List.of(AuthInterceptor.PARAM_TOKEN))
+                .withAllowedOrigins(ImmutableList.of("*"))
+                .withAllowedHeaders(ImmutableList.of(AuthInterceptor.PARAM_TOKEN))
                 .withAllowedMethods(allowedMethods);
 
         client.setBucketCrossOriginConfiguration(OssConfiguration.bucket,

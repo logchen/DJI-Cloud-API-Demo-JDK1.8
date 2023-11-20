@@ -25,7 +25,7 @@ public enum DrcUpMethodEnum {
 
     OSD_INFO_PUSH("osd_info_push", ChannelName.INBOUND_DRC_UP_OSD_INFO_PUSH, new TypeReference<OsdInfoPush>() {}),
 
-    UNKNOWN("", ChannelName.DEFAULT, new TypeReference<>() {});
+    UNKNOWN("", ChannelName.DEFAULT, new TypeReference<Void>() {});
 
     private final String method;
 

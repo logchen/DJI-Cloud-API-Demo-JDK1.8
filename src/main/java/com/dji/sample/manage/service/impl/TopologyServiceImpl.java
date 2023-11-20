@@ -8,6 +8,7 @@ import com.dji.sample.manage.service.ITopologyService;
 import com.dji.sdk.cloudapi.device.DeviceDomainEnum;
 import com.dji.sdk.cloudapi.tsa.DeviceTopology;
 import com.dji.sdk.cloudapi.tsa.TopologyList;
+import com.google.common.collect.ImmutableList;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -32,7 +33,8 @@ public class TopologyServiceImpl implements ITopologyService {
         List<DeviceDTO> gatewayList = deviceService.getDevicesByParams(
                 DeviceQueryParam.builder()
                         .workspaceId(workspaceId)
-                        .domains(List.of(DeviceDomainEnum.REMOTER_CONTROL.getDomain()))
+                        .domains(ImmutableList.of(DeviceDomainEnum.REMOTER_CONTROL.getDomain()))
+                        .orderBy(false).isAsc(false)
                         .build());
 
         List<TopologyList> topologyList = new ArrayList<>();
@@ -45,7 +47,7 @@ public class TopologyServiceImpl implements ITopologyService {
 
     public Optional<TopologyList> getDeviceTopologyByGatewaySn(String gatewaySn) {
         Optional<DeviceDTO> dtoOptional = deviceService.getDeviceBySn(gatewaySn);
-        if (dtoOptional.isEmpty()) {
+        if (!dtoOptional.isPresent()) {
             return Optional.empty();
         }
         List<DeviceTopology> parents = new ArrayList<>();

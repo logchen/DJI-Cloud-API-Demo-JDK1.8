@@ -108,7 +108,7 @@ public class WaylineJobServiceImpl implements IWaylineJobService {
     @Override
     public Optional<WaylineJobDTO> createWaylineJobByParent(String workspaceId, String parentId) {
         Optional<WaylineJobDTO> parentJobOpt = this.getJobByJobId(workspaceId, parentId);
-        if (parentJobOpt.isEmpty()) {
+        if (!parentJobOpt.isPresent()) {
             return Optional.empty();
         }
         WaylineJobEntity jobEntity = this.dto2Entity(parentJobOpt.get());
@@ -202,12 +202,12 @@ public class WaylineJobServiceImpl implements IWaylineJobService {
 
     public WaylineJobStatusEnum getWaylineState(String dockSn) {
         Optional<DeviceDTO> dockOpt = deviceRedisService.getDeviceOnline(dockSn);
-        if (dockOpt.isEmpty() || !StringUtils.hasText(dockOpt.get().getChildDeviceSn())) {
+        if (!dockOpt.isPresent() || !StringUtils.hasText(dockOpt.get().getChildDeviceSn())) {
             return WaylineJobStatusEnum.UNKNOWN;
         }
         Optional<OsdDock> dockOsdOpt = deviceRedisService.getDeviceOsd(dockSn, OsdDock.class);
         Optional<OsdDockDrone> deviceOsdOpt = deviceRedisService.getDeviceOsd(dockOpt.get().getChildDeviceSn(), OsdDockDrone.class);
-        if (dockOsdOpt.isEmpty() || deviceOsdOpt.isEmpty() || DockModeCodeEnum.WORKING != dockOsdOpt.get().getModeCode()) {
+        if (!dockOsdOpt.isPresent() || !deviceOsdOpt.isPresent() || DockModeCodeEnum.WORKING != dockOsdOpt.get().getModeCode()) {
             return WaylineJobStatusEnum.UNKNOWN;
         }
 

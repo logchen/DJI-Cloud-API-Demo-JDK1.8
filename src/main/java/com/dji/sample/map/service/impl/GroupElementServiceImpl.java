@@ -69,7 +69,7 @@ public class GroupElementServiceImpl implements IGroupElementService {
     @Override
     public Boolean updateElement(String elementId, UpdateMapElementRequest elementUpdate, String username) {
         Optional<GroupElementEntity> groupElementOpt = this.getEntityByElementId(elementId);
-        if (groupElementOpt.isEmpty()) {
+        if (!groupElementOpt.isPresent()) {
             return false;
         }
 
@@ -91,7 +91,7 @@ public class GroupElementServiceImpl implements IGroupElementService {
     @Override
     public Boolean deleteElement(String elementId) {
         Optional<GroupElementEntity> groupElementOpt = this.getEntityByElementId(elementId);
-        if (groupElementOpt.isEmpty()) {
+        if (!groupElementOpt.isPresent()) {
             return true;
         }
 
@@ -103,7 +103,7 @@ public class GroupElementServiceImpl implements IGroupElementService {
     @Override
     public Optional<GroupElementDTO> getElementByElementId(String elementId) {
         Optional<GroupElementEntity> elementEntityOpt = this.getEntityByElementId(elementId);
-        if (elementEntityOpt.isEmpty()) {
+        if (!elementEntityOpt.isPresent()) {
             return Optional.empty();
         }
         GroupElementEntity elementEntity = elementEntityOpt.get();
@@ -134,7 +134,7 @@ public class GroupElementServiceImpl implements IGroupElementService {
      */
     private void addCoordinateToElement(MapGroupElement element, GroupElementEntity elementEntity) {
         Optional<ElementGeometryType> coordinateOpt = ElementTypeEnum.findType(elementEntity.getElementType());
-        if (coordinateOpt.isEmpty()) {
+        if (!coordinateOpt.isPresent()) {
             return;
         }
         element.getResource()

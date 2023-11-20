@@ -2,6 +2,7 @@ package com.dji.sample.manage.model.enums;
 
 import com.dji.sample.manage.model.receiver.*;
 import com.dji.sdk.cloudapi.property.PropertySetEnum;
+import com.dji.sdk.exception.CloudSDKException;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 import java.util.Arrays;
@@ -63,6 +64,6 @@ public enum PropertySetFieldEnum {
 
     public static PropertySetFieldEnum find(String property) {
         return Arrays.stream(values()).filter(propertyEnum -> propertyEnum.property.getProperty().equals(property)).findAny()
-                .orElseThrow();
+                .orElseThrow(() -> new CloudSDKException(PropertySetFieldEnum.class, property));
     }
 }

@@ -5,6 +5,7 @@ import com.dji.sample.manage.model.param.DeviceHmsQueryParam;
 import com.dji.sample.manage.service.IDeviceHmsService;
 import com.dji.sdk.common.HttpResultResponse;
 import com.dji.sdk.common.PaginationData;
+import com.google.common.collect.ImmutableSet;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -61,7 +62,7 @@ public class DeviceHmsController {
     public HttpResultResponse<List<DeviceHmsDTO>> getUnreadHmsByDeviceSn(@PathVariable("device_sn") String deviceSn) {
         PaginationData<DeviceHmsDTO> paginationData = deviceHmsService.getDeviceHmsByParam(
                 DeviceHmsQueryParam.builder()
-                        .deviceSn(new HashSet<>(Set.of(deviceSn)))
+                        .deviceSn(new HashSet<>(ImmutableSet.of(deviceSn)))
                         .updateTime(0L)
                         .build());
         return HttpResultResponse.success(paginationData.getList());

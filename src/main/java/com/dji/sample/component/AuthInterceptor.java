@@ -42,7 +42,7 @@ public class AuthInterceptor implements HandlerInterceptor {
 
         // Check if the current token is valid.
         Optional<CustomClaim> customClaimOpt = JwtUtil.parseToken(token);
-        if (customClaimOpt.isEmpty()) {
+        if (!customClaimOpt.isPresent()) {
             response.setStatus(HttpStatus.UNAUTHORIZED.value());
             return false;
         }

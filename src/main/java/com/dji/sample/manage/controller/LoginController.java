@@ -38,7 +38,7 @@ public class LoginController {
         String token = request.getHeader(PARAM_TOKEN);
         Optional<UserDTO> user = userService.refreshToken(token);
 
-        if (user.isEmpty()) {
+        if (!user.isPresent()) {
             response.setStatus(HttpStatus.UNAUTHORIZED.value());
             return HttpResultResponse.error(CommonErrorEnum.NO_TOKEN.getMessage());
         }
